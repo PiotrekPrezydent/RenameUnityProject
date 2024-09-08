@@ -1,65 +1,61 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
-
-namespace RenameUnityProject
+﻿namespace RenameUnityProject
 {
     internal class Program
     {
         static void Main(string[] args)
         {
+            int selectedIndex = 0;
             string[] unityProjects = Directory.GetDirectories(Directory.GetCurrentDirectory());
-            Console.WriteLine("select project to rename");
-            for(int i = 0; i<unityProjects.Length; i++)
+            string? selectedOption = Console.ReadLine();
+            do
             {
-                string[] splitted = unityProjects[i].Split("\\");
-                Console.WriteLine(i + 1 + ". " + splitted[splitted.Length - 1]);
+                Console.WriteLine("Select project to rename");
+                for (int i = 0; i < unityProjects.Length; i++)
+                {
+                    string[] splitted = unityProjects[i].Split("\\");
+                    Console.WriteLine(i + 1 + ". " + splitted[splitted.Length - 1]);
+                }
+                Console.Clear();
+                Console.WriteLine("Incorrect index");
             }
+            while (!int.TryParse(selectedOption, out selectedIndex));
+            Console.Clear();
 
-            int usedIndex = -1;
-            try
-            {
-                usedIndex += int.Parse(Console.ReadLine());
-            }catch(Exception e)
-            {
-                Console.WriteLine("wrong index");
-            }
+            selectedIndex--;
 
-            Console.WriteLine("Please write name for your unity project");
-            string? name = Console.ReadLine();
-            while (IsNameIncorrect(name))
-            {
-                Console.WriteLine("incorrect name please use something else");
-                name = Console.ReadLine();
-            }
-
-            string[] dirs = unityProjects[usedIndex].Split("\\");
+            string? name = "";
+            string[] dirs = unityProjects[selectedIndex].Split("\\");
             string oldName = dirs[dirs.Length - 1];
+            do
+            {
+                Console.WriteLine("Write new name for "+ oldName+" unity project");
+                name = Console.ReadLine();
+                Console.Clear();
+                Console.WriteLine("Incorrect name try something else");
+            } while (IsNameCorrect(name));
+            Console.Clear();
 
             string newDirectoryName = "";
             for (int i = 0; i < dirs.Length - 1; i++)
-            {
                 newDirectoryName += dirs[i] + "\\";
-            }
+
             newDirectoryName += name;
 
             Directory.Move(Directory.GetCurrentDirectory() + "\\" + oldName, newDirectoryName);
+            RenameAllReferencesToOldName(newDirectoryName, oldName, name!);
 
-            RenameAllReferencesToOldName(newDirectoryName, oldName, name);
-            Console.WriteLine("renamed project to: " + name + " succesfuly\n press any key to return");
+            Console.WriteLine("Renamed " + oldName + " unity project to: " + name + " succesfuly\npress any key to return");
             Console.Read();
         }
 
-        static void RenameAllReferencesToOldName(string dir, string oldName,string? newName)
+        static void RenameAllReferencesToOldName(string baseDir, string oldName,string newName)
         {
-            if (newName == null)
-                return;
-
-            foreach(var file in Directory.GetFiles(dir))
+            foreach(var file in Directory.GetFiles(baseDir))
             {
-                if (file == Environment.GetCommandLineArgs()[0])
-                    continue;
+                //this wont happen now i think
+                //if (file == Environment.GetCommandLineArgs()[0])
+                //    continue;
+                //project will lock if we try to change something here
                 if (file.Contains("Library\\SourceAssetDB"))
                     continue;
                 try
@@ -74,11 +70,9 @@ namespace RenameUnityProject
 
                     if (Path.GetFileName(file).Contains(oldName))
                     {
-                        File.Move(file, Path.Combine(dir, newName + Path.GetExtension(file)));
-                        Console.WriteLine("renamed " + file + " to " + Path.Combine(dir, newName + Path.GetExtension(file)));
+                        File.Move(file, Path.Combine(baseDir, newName + Path.GetExtension(file)));
+                        Console.WriteLine("renamed " + file + " to " + Path.Combine(baseDir, newName + Path.GetExtension(file)));
                     }
-;
-
                 }
                 catch (Exception e)
                 {
@@ -86,28 +80,33 @@ namespace RenameUnityProject
                 }
 
             }
-            foreach (var d in Directory.GetDirectories(dir))
-                RenameAllReferencesToOldName(d,oldName, newName);
+            foreach (var dir in Directory.GetDirectories(baseDir))
+                RenameAllReferencesToOldName(dir,oldName, newName);
         }
 
-        static bool IsNameIncorrect(string? name)
+        static bool IsNameCorrect(string? name)
         {
             if (name == null)
-                return true;
+                return false;
 
-            if (name[name.Length - 1] == ' ' || name[name.Length - 1] == '.') 
-                return true;
-            //td add incorrect windows names 
-            //CON, PRN, AUX, NUL
-            //COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
-            //LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, LPT9
+            if (name == "")
+                return false;
+
+            if (name[name.Length - 1] == ' ' || name[name.Length - 1] == '.')
+                return false;
 
             char[] incorrectChars = { '/', '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
             for (int i = 0; i < name.Length; i++)
                 for (int j = 0; j < incorrectChars.Length; j++)
                     if (name[i] == incorrectChars[j])
-                        return true;
-            return false;
+                        return false;
+
+            string[] incorrectNames = { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+            for (int i=0;i<incorrectNames.Length;i++)
+                if(name == incorrectNames[i])
+                    return false;
+
+            return true;
         }
     }
 }
