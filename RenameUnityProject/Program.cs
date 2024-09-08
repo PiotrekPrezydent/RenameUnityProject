@@ -5,8 +5,8 @@
         static void Main(string[] args)
         {
             int selectedIndex = 0;
+            string? selectedOption = "";
             string[] unityProjects = Directory.GetDirectories(Directory.GetCurrentDirectory());
-            string? selectedOption = Console.ReadLine();
             do
             {
                 Console.WriteLine("Select project to rename");
@@ -19,7 +19,7 @@
                 Console.Clear();
                 Console.WriteLine("Incorrect index");
             }
-            while (!int.TryParse(selectedOption, out selectedIndex));
+            while (!int.TryParse(selectedOption, out selectedIndex) || selectedIndex < 0 || selectedIndex > unityProjects.Length);
             Console.Clear();
 
             selectedIndex--;
