@@ -15,6 +15,7 @@
                     string[] splitted = unityProjects[i].Split("\\");
                     Console.WriteLine(i + 1 + ". " + splitted[splitted.Length - 1]);
                 }
+                selectedOption = Console.ReadLine();
                 Console.Clear();
                 Console.WriteLine("Incorrect index");
             }
@@ -32,7 +33,7 @@
                 name = Console.ReadLine();
                 Console.Clear();
                 Console.WriteLine("Incorrect name try something else");
-            } while (IsNameCorrect(name));
+            } while (!IsNameCorrect(name));
             Console.Clear();
 
             string newDirectoryName = "";
