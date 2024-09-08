@@ -53,11 +53,10 @@
         {
             foreach(var file in Directory.GetFiles(baseDir))
             {
-                //this wont happen now i think
-                //if (file == Environment.GetCommandLineArgs()[0])
-                //    continue;
                 //project will lock if we try to change something here
                 if (file.Contains("Library\\SourceAssetDB"))
+                    continue;
+                if (file.Contains("Library\\ArtifactDB"))
                     continue;
                 try
                 {
