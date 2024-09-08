@@ -1,0 +1,1 @@
+Move "RenameUnityProject.exe" to folder where are your unity projects and run it
